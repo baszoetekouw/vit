@@ -119,6 +119,8 @@ sub inner_read_report {
   &audit("EXEC $task $args 2> /dev/null");
   open(IN,"$task $args 2> /dev/null |");
   my $i = 0;
+  # TODO: this will fail if someone has >10k active tasks
+  my $deleted_task_id = 10000;
   my $prev_id;
   while(<IN>) {
     chop;
@@ -152,11 +154,18 @@ sub inner_read_report {
     if ( $_ =~ m/^ {$len_firstcol}/ ) {
       $report2taskid[$i] = $prev_id;
       &audit("inner_read_report: report2taskid[$i]=$prev_id")
-    } else {
-      $_ =~ m/^\s*(\d+) /;
+    } elsif ($_ =~ m/^\s*(\d+) /) {
+      # line starts with a numeric id
       $report2taskid[$i] = $1;
       $taskid2report[$1] = $i;
       &audit("inner_read_report: report2taskid[$i]=$1, taskid2report[$1]=$i")
+    } elsif ( $_ =~ /^\s*-\s/ ) {
+      # handle case of deleted tasks (will have "-" instead of numeric id)
+      # TODO: this is kind of hackish: we use a very large "virtual" taskid for deleted/completed tasks
+      $report2taskid[$i] = $deleted_task_id;
+      $taskid2report[$deleted_task_id] = $i;
+      &audit("found deleted task $deleted_task_id");
+      $deleted_task_id++;
     }
     $prev_id = $report2taskid[$i];
     $i++;
