@@ -21,7 +21,7 @@ sub parse_vitrc {
         $skey = &replace_keycodes("$skey");
         $cmd = &replace_keycodes("$cmd");
 
-        # TODO: get rid of the eval().  
+        # TODO: get rid of the eval().
         # This shouldn't be too hard, but I need to figure out what exactly is happening here.
         $skey = eval "\"$skey\"";
 
@@ -39,14 +39,14 @@ sub parse_vitrc {
           }
           $burndown = $configval;
         }
-        elsif ($configname eq "pedantic") {
+        elsif ($configname eq "confirmation") {
           # TODO: fix code duplication (see above)
           if (!&sanitycheck_bool($configval)) {
             print STDERR "ERROR: boolean config variable '$configname' must ".
                          "be set to 'yes' or 'no'.\n";
             exit(1);
           }
-          $pedantic = ( $configval eq "yes" ? 1 : undef );
+          $confirmation = ( $configval eq "yes" ? 1 : undef );
         }
       }
     }
